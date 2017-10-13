@@ -48,41 +48,46 @@ logging.basicConfig(level=logging.DEBUG,
                 filename=arguments['--log'],
                 filemode='a')
 
-
 def dumpBinlog(user,password,host,port,backup_dir,log,last_file=''):
         LOCAL_BACKUP_DIR=backup_dir
         if backup_dir[-1]!= '/':
             os.exit()
         #BACKUP_LOG='/data4/binlog_backup/120.27.136.247/BB.log'
         BACKUP_LOG=log[log.rfind('/')+1:]
-        if not last_file:
-                cmd="ls -A {LOCAL_BACKUP_DIR} | grep -v {BACKUP_LOG} | grep -v nohup.out |wc -l".format(LOCAL_BACKUP_DIR=LOCAL_BACKUP_DIR,BACKUP_LOG=BACKUP_LOG)
-                child=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
-                child.wait()
-                wc_l=int(child.communicate()[0].strip())
-                if wc_l != 0:
-                        cmd="ls -l %s | grep -v %s | grep -v nohup.out |tail -n 1 |awk '{print $9}'" % (LOCAL_BACKUP_DIR,BACKUP_LOG)
-                        child=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
-                        child.wait()
-                        LAST_FILE=child.communicate()[0].strip()
-        else:
-                LAST_FILE=last_file
-        logging.info('Last File is %s' % (LAST_FILE))
-
-
-        mysqlbinlog='mysqlbinlog --raw --read-from-remote-server --stop-never --host={REMOTE_HOST} --port={REMOTE_PORT} --user={REMOTE_USER} --password={REMOTE_PASS} --result-file={RESULT_FILE} {LAST_FILE}'.format(REMOTE_HOST=host,REMOTE_PORT=port,REMOTE_USER=user,REMOTE_PASS=password,RESULT_FILE=LOCAL_BACKUP_DIR,LAST_FILE=LAST_FILE)
-
         while True:
-                subprocess.call(mysqlbinlog,shell=True)
-                logging.info('Binlog server stop!!!,reconnect after 10 seconds')
-                time.sleep(10)
+            if not last_file:
+                    cmd="ls -A {LOCAL_BACKUP_DIR} | grep -v {BACKUP_LOG} | grep -v nohup.out |wc -l".format(LOCAL_BACKUP_DIR=LOCAL_BACKUP_DIR,BACKUP_LOG=BACKUP_LOG)
+                    child=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+                    child.wait()
+                    wc_l=int(child.communicate()[0].strip())
+                    if wc_l != 0:
+                            cmd="ls -l %s | grep -v %s | grep -v nohup.out |tail -n 1 |awk '{print $9}'" % (LOCAL_BACKUP_DIR,BACKUP_LOG)
+                            child=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+                            child.wait()
+                            LAST_FILE=child.communicate()[0].strip()
+            else:
+                    LAST_FILE=last_file
+            logging.info('Last File is %s' % (LAST_FILE))
+
+
+            mysqlbinlog='mysqlbinlog --raw --read-from-remote-server --stop-never --host={REMOTE_HOST} --port={REMOTE_PORT} --user={REMOTE_USER} --password={REMOTE_PASS} --result-file={RESULT_FILE} {LAST_FILE}'.format(REMOTE_HOST=host,REMOTE_PORT=port,REMOTE_USER=user,REMOTE_PASS=password,RESULT_FILE=LOCAL_BACKUP_DIR,LAST_FILE=LAST_FILE)
+
+
+            subprocess.call(mysqlbinlog,shell=True)
+            logging.info('Binlog server stop!!!,reconnect after 10 seconds')
+            time.sleep(10)
 
 if __name__ == '__main__':
-    child=subprocess.Popen('ls /tmp|grep binlog_server.lock',shell=True,stdout=subprocess.PIPE)
+    if arguments['--config']:
+        lock_file=db_host+"_binlog_server.lock"
+    else:
+        lock_file=arguments['--host']+"_binlog_server.lock"
+
+    child=subprocess.Popen('ls /tmp|grep %s' % (lock_file),shell=True,stdout=subprocess.PIPE)
     child.wait()
     lock=child.communicate()[0].strip()
     if not lock:
-        subprocess.call('touch /tmp/binlog_server.lock',shell=True)
+        subprocess.call('touch /tmp/%s' % (lock_file),shell=True)
         logging.info('Get lock,Binlog server start!!!')
         if not arguments['--config']:
            dumpBinlog(arguments['--user'],arguments['--password'],arguments['--host'],arguments['--port'],arguments['--backup-dir'],arguments['--log'],arguments['--last-file'])
