@@ -56,12 +56,14 @@ def dumpBinlog(user,password,host,port,backup_dir,log,last_file=''):
         BACKUP_LOG=log[log.rfind('/')+1:]
         while True:
             if not last_file:
-                    cmd="ls -A {LOCAL_BACKUP_DIR} | grep -v {BACKUP_LOG} | grep -v nohup.out |wc -l".format(LOCAL_BACKUP_DIR=LOCAL_BACKUP_DIR,BACKUP_LOG=BACKUP_LOG)
+                    #cmd="ls -A {LOCAL_BACKUP_DIR} | grep -v {BACKUP_LOG} | grep -v nohup.out |wc -l".format(LOCAL_BACKUP_DIR=LOCAL_BACKUP_DIR,BACKUP_LOG=BACKUP_LOG)
+                    cmd="ls -A {LOCAL_BACKUP_DIR} | grep -E mysql-bin\.[0-9]*$ | wc -l".format(LOCAL_BACKUP_DIR=LOCAL_BACKUP_DIR)
                     child=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
                     child.wait()
                     wc_l=int(child.communicate()[0].strip())
                     if wc_l != 0:
-                            cmd="ls -l %s | grep -v %s | grep -v nohup.out |tail -n 1 |awk '{print $9}'" % (LOCAL_BACKUP_DIR,BACKUP_LOG)
+                            #cmd="ls -l %s | grep -v %s | grep -v nohup.out |tail -n 1 |awk '{print $9}'" % (LOCAL_BACKUP_DIR,BACKUP_LOG)
+                            cmd="ls -l %s | grep -E mysql-bin\.[0-9]*$ |tail -n 1 |awk '{print $9}'" % (LOCAL_BACKUP_DIR)
                             child=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
                             child.wait()
                             LAST_FILE=child.communicate()[0].strip()
