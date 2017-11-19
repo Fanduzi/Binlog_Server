@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf8 -*-
 """
 Usage:
         binlog_server.py --user=<username> --password=<password> --host=<remote_host> --port=<remote_port> --backup-dir=<backup_dir> --log=<log> [--last-file=<last-file>]
@@ -26,6 +28,7 @@ import ConfigParser
 import os
 
 arguments = docopt(__doc__, version='Binlog server 1.0')
+print(arguments)
 if arguments['--config']:
     cf=ConfigParser.ConfigParser()
     cf.read(arguments['--config'])
@@ -58,22 +61,35 @@ def dumpBinlog(user,password,host,port,backup_dir,log,last_file=''):
             if not last_file:
                     #cmd="ls -A {LOCAL_BACKUP_DIR} | grep -v {BACKUP_LOG} | grep -v nohup.out |wc -l".format(LOCAL_BACKUP_DIR=LOCAL_BACKUP_DIR,BACKUP_LOG=BACKUP_LOG)
                     cmd="ls -A {LOCAL_BACKUP_DIR} | grep -E mysql-bin\.[0-9]*$ | wc -l".format(LOCAL_BACKUP_DIR=LOCAL_BACKUP_DIR)
-                    child=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
-                    child.wait()
+                    print(cmd)
+                    child = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                    while child.poll() == None:
+                        stdout_line = child.stdout.readline().strip()
+                        if stdout_line:
+                            logging.info(stdout_line)
+                    logging.info(child.stdout.read().strip())
                     wc_l=int(child.communicate()[0].strip())
+                    print(wc_l)
                     if wc_l != 0:
                             #cmd="ls -l %s | grep -v %s | grep -v nohup.out |tail -n 1 |awk '{print $9}'" % (LOCAL_BACKUP_DIR,BACKUP_LOG)
                             cmd="ls -l %s | grep -E mysql-bin\.[0-9]*$ |tail -n 1 |awk '{print $9}'" % (LOCAL_BACKUP_DIR)
-                            child=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
-                            child.wait()
+                            print(cmd)
+                            child = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                            while child.poll() == None:
+                                stdout_line = child.stdout.readline().strip()
+                                if stdout_line:
+                                    logging.info(stdout_line)
+                            logging.info(child.stdout.read().strip())
                             LAST_FILE=child.communicate()[0].strip()
+                            print(LAST_FILE)
             else:
                     LAST_FILE=last_file
+                    print(LAST_FILE)
             logging.info('Last File is %s' % (LAST_FILE))
 
 
-            mysqlbinlog='mysqlbinlog --raw --read-from-remote-server --stop-never --host={REMOTE_HOST} --port={REMOTE_PORT} --user={REMOTE_USER} --password={REMOTE_PASS} --result-file={RESULT_FILE} {LAST_FILE}'.format(REMOTE_HOST=host,REMOTE_PORT=port,REMOTE_USER=user,REMOTE_PASS=password,RESULT_FILE=LOCAL_BACKUP_DIR,LAST_FILE=LAST_FILE)
-
+            mysqlbinlog='/usr/local/mysql/bin/mysqlbinlog --raw --read-from-remote-server --stop-never --host={REMOTE_HOST} --port={REMOTE_PORT} --user={REMOTE_USER} --password={REMOTE_PASS} --result-file={RESULT_FILE} {LAST_FILE}'.format(REMOTE_HOST=host,REMOTE_PORT=port,REMOTE_USER=user,REMOTE_PASS=password,RESULT_FILE=LOCAL_BACKUP_DIR,LAST_FILE=LAST_FILE)
+            print(mysqlbinlog)
 
             subprocess.call(mysqlbinlog,shell=True)
             logging.info('Binlog server stop!!!,reconnect after 10 seconds')
@@ -85,8 +101,12 @@ if __name__ == '__main__':
     else:
         lock_file=arguments['--host']+"_binlog_server.lock"
 
-    child=subprocess.Popen('ls /tmp|grep %s' % (lock_file),shell=True,stdout=subprocess.PIPE)
-    child.wait()
+    child=subprocess.Popen('ls /tmp|grep %s' % (lock_file),shell=True,stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    while child.poll() == None:
+        stdout_line = child.stdout.readline().strip()
+        if stdout_line:
+            logging.info(stdout_line)
+    logging.info(child.stdout.read().strip())
     lock=child.communicate()[0].strip()
     if not lock:
         subprocess.call('touch /tmp/%s' % (lock_file),shell=True)
