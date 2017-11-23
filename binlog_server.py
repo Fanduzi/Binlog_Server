@@ -93,6 +93,7 @@ def dumpBinlog(user,password,host,port,backup_dir,log,last_file=''):
 
             subprocess.call(mysqlbinlog,shell=True)
             logging.info('Binlog server stop!!!,reconnect after 10 seconds')
+            last_file=None
             time.sleep(10)
 
 if __name__ == '__main__':
