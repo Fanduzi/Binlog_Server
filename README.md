@@ -2,6 +2,7 @@
 
 ## 使用方法
 两种方式
+
 1.通过配置文件
 ```
 python /scripts/binlog_server.py --config=/tmp/binlog_server.cnf --dbname=GN_PT_SLAVE1
