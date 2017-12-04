@@ -27,7 +27,7 @@ import time
 import ConfigParser
 import os
 
-arguments = docopt(__doc__, version='Binlog server 1.0')
+arguments = docopt(__doc__, version='Binlog server 1.0.1')
 print(arguments)
 if arguments['--config']:
     cf=ConfigParser.ConfigParser()
