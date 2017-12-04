@@ -27,7 +27,7 @@ import time
 import ConfigParser
 import os
 
-arguments = docopt(__doc__, version='Binlog server 1.0.1')
+arguments = docopt(__doc__, version='Binlog server 1.0.2')
 print(arguments)
 if arguments['--config']:
     cf=ConfigParser.ConfigParser()
@@ -83,7 +83,13 @@ def dumpBinlog(user,password,host,port,backup_dir,log,last_file=''):
             mysqlbinlog='/usr/local/mysql/bin/mysqlbinlog --raw --read-from-remote-server --stop-never --host={REMOTE_HOST} --port={REMOTE_PORT} --user={REMOTE_USER} --password={REMOTE_PASS} --result-file={RESULT_FILE} {LAST_FILE}'.format(REMOTE_HOST=host,REMOTE_PORT=port,REMOTE_USER=user,REMOTE_PASS=password,RESULT_FILE=LOCAL_BACKUP_DIR,LAST_FILE=LAST_FILE)
             print(mysqlbinlog)
 
-            subprocess.call(mysqlbinlog,shell=True)
+            #subprocess.call(mysqlbinlog,shell=True)
+            child = subprocess.Popen(mysqlbinlog, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            while child.poll() == None:
+                stdout_line = child.stdout.readline().strip()
+                if stdout_line:
+                    logging.info(stdout_line)
+            logging.info(child.stdout.read().strip())
             logging.info('Binlog server stop!!!,reconnect after 10 seconds')
             last_file=None
             time.sleep(10)
