@@ -63,11 +63,7 @@ def dumpBinlog(user,password,host,port,backup_dir,log,last_file=''):
                     cmd="ls -A {LOCAL_BACKUP_DIR} | grep -E mysql-bin\.[0-9]*$ | wc -l".format(LOCAL_BACKUP_DIR=LOCAL_BACKUP_DIR)
                     print(cmd)
                     child = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-                    while child.poll() == None:
-                        stdout_line = child.stdout.readline().strip()
-                        if stdout_line:
-                            logging.info(stdout_line)
-                    logging.info(child.stdout.read().strip())
+                    child.wait()
                     wc_l=int(child.communicate()[0].strip())
                     print(wc_l)
                     if wc_l != 0:
@@ -75,11 +71,7 @@ def dumpBinlog(user,password,host,port,backup_dir,log,last_file=''):
                             cmd="ls -l %s | grep -E mysql-bin\.[0-9]*$ |tail -n 1 |awk '{print $9}'" % (LOCAL_BACKUP_DIR)
                             print(cmd)
                             child = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-                            while child.poll() == None:
-                                stdout_line = child.stdout.readline().strip()
-                                if stdout_line:
-                                    logging.info(stdout_line)
-                            logging.info(child.stdout.read().strip())
+                            child.wait()
                             LAST_FILE=child.communicate()[0].strip()
                             print(LAST_FILE)
             else:
@@ -103,12 +95,9 @@ if __name__ == '__main__':
         lock_file=arguments['--host']+"_binlog_server.lock"
 
     child=subprocess.Popen('ls /tmp|grep %s' % (lock_file),shell=True,stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    while child.poll() == None:
-        stdout_line = child.stdout.readline().strip()
-        if stdout_line:
-            logging.info(stdout_line)
-    logging.info(child.stdout.read().strip())
+    child.wait()
     lock=child.communicate()[0].strip()
+    print(lock)
     if not lock:
         subprocess.call('touch /tmp/%s' % (lock_file),shell=True)
         logging.info('Get lock,Binlog server start!!!')
