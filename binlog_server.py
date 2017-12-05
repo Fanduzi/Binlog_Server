@@ -2,7 +2,7 @@
 # -*- coding: utf8 -*-
 """
 Usage:
-        binlog_server.py --user=<username> --password=<password> --host=<remote_host> --port=<remote_port> --backup-dir=<backup_dir> --log=<log> [--last-file=<last-file>]
+        binlog_server.py --user=<username> --password=<password> --host=<remote_host> --port=<remote_port> --backup-dir=<backup_dir> --log=<log> [--last-file=<last-file>] [--stop-never-slave-server-id]
         binlog_server.py -h | --help
         binlog_server.py --version
         binlog_server.py --config=<config_file> --dbname=<database_name> [--last-file=<last-file>]
@@ -19,6 +19,7 @@ Options:
         --last-file=<last-file>         Specify the starting binlog.
         --config=<config_file>          Config file.
         --dbname=<database_name>        Section name in config file.
+        --stop-never-slave-server-id    The slave server_id used for binlog server.
 """
 from docopt import docopt
 import subprocess
@@ -27,7 +28,7 @@ import time
 import ConfigParser
 import os
 
-arguments = docopt(__doc__, version='Binlog server 1.0.2')
+arguments = docopt(__doc__, version='Binlog server 1.0.3')
 print(arguments)
 if arguments['--config']:
     cf=ConfigParser.ConfigParser()
@@ -38,6 +39,7 @@ if arguments['--config']:
     db_user = cf.get(section_name, "db_user")
     db_passwd = cf.get(section_name, "db_passwd")
     backup_dir = cf.get(section_name, "backup_dir")
+    server_id = cf.get(section_name, "server_id")
     log = cf.get(section_name, "log")
     logging.basicConfig(level=logging.DEBUG,
                 format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
@@ -51,7 +53,7 @@ logging.basicConfig(level=logging.DEBUG,
                 filename=arguments['--log'],
                 filemode='a')
 
-def dumpBinlog(user,password,host,port,backup_dir,log,last_file=''):
+def dumpBinlog(user,password,host,port,backup_dir,log,last_file='',server_id=''):
         LOCAL_BACKUP_DIR=backup_dir
         if backup_dir[-1]!= '/':
             os.exit()
@@ -79,9 +81,12 @@ def dumpBinlog(user,password,host,port,backup_dir,log,last_file=''):
                     print(LAST_FILE)
             logging.info('Last File is %s' % (LAST_FILE))
 
-
-            mysqlbinlog='/usr/local/mysql/bin/mysqlbinlog --raw --read-from-remote-server --stop-never --host={REMOTE_HOST} --port={REMOTE_PORT} --user={REMOTE_USER} --password={REMOTE_PASS} --result-file={RESULT_FILE} {LAST_FILE}'.format(REMOTE_HOST=host,REMOTE_PORT=port,REMOTE_USER=user,REMOTE_PASS=password,RESULT_FILE=LOCAL_BACKUP_DIR,LAST_FILE=LAST_FILE)
-            print(mysqlbinlog)
+            if not server_id:
+                mysqlbinlog='/usr/local/mysql/bin/mysqlbinlog --raw --read-from-remote-server --stop-never --host={REMOTE_HOST} --port={REMOTE_PORT} --user={REMOTE_USER} --password={REMOTE_PASS} --result-file={RESULT_FILE} {LAST_FILE}'.format(REMOTE_HOST=host,REMOTE_PORT=port,REMOTE_USER=user,REMOTE_PASS=password,RESULT_FILE=LOCAL_BACKUP_DIR,LAST_FILE=LAST_FILE)
+                print(mysqlbinlog)
+            elif server_id:
+                mysqlbinlog='/usr/local/mysql/bin/mysqlbinlog --raw --read-from-remote-server --stop-never --host={REMOTE_HOST} --port={REMOTE_PORT} --user={REMOTE_USER} --password={REMOTE_PASS} --stop-never-slave-server-id={SERVER_ID} --result-file={RESULT_FILE} {LAST_FILE}'.format(REMOTE_HOST=host,REMOTE_PORT=port,REMOTE_USER=user,REMOTE_PASS=password,SERVER_ID=server_id,RESULT_FILE=LOCAL_BACKUP_DIR,LAST_FILE=LAST_FILE)
+                print(mysqlbinlog)
 
             #subprocess.call(mysqlbinlog,shell=True)
             child = subprocess.Popen(mysqlbinlog, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -108,9 +113,9 @@ if __name__ == '__main__':
         subprocess.call('touch /tmp/%s' % (lock_file),shell=True)
         logging.info('Get lock,Binlog server start!!!')
         if not arguments['--config']:
-           dumpBinlog(arguments['--user'],arguments['--password'],arguments['--host'],arguments['--port'],arguments['--backup-dir'],arguments['--log'],arguments['--last-file'])
+           dumpBinlog(arguments['--user'],arguments['--password'],arguments['--host'],arguments['--port'],arguments['--backup-dir'],arguments['--log'],arguments['--last-file'],arguments['--stop-never-slave-server-id'])
         else:
-           dumpBinlog(db_user,db_passwd,db_host,db_port,backup_dir,log,arguments['--last-file'])
+           dumpBinlog(db_user,db_passwd,db_host,db_port,backup_dir,log,arguments['--last-file'],server_id)
 
     else:
         logging.info('Binlog server already running!!!')
