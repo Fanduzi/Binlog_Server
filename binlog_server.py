@@ -57,7 +57,7 @@ def genConfig(config_file,info_file,delimiter=',',quotechar='"'):
 def genStartupComm(section_list):
     with open(os.getcwd()+'/bootstrap.sh','a') as file:
         for line in section_list:
-            file.write('python /scripts/binlog_server.py --config=/scripts/binlog_server.cnf --dbname='+ line + '--last-file=mysql-bin.000001' +'\n')
+            file.write('nohup python /scripts/binlog_server.py --config=/scripts/binlog_server.cnf --dbname='+ line + '--last-file=mysql-bin.000001 &' +'\n')
 
 def dumpBinlog(user,password,host,port,backup_dir,log,last_file='',server_id=''):
         LOCAL_BACKUP_DIR=backup_dir
