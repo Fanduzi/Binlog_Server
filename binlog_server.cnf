@@ -5,3 +5,4 @@ db_user=
 db_passwd=
 backup_dir=
 log=
+server_id=
