@@ -3,6 +3,7 @@
 """
 Usage:
         binlog_server.py --user=<username> --password=<password> --host=<remote_host> --port=<remote_port> --backup-dir=<backup_dir> --log=<log> [--last-file=<last-file>] [--stop-never-slave-server-id]
+        binlog_server.py make-config --info-file=<a.csv> --config-file<binlog_server.cnf>
         binlog_server.py -h | --help
         binlog_server.py --version
         binlog_server.py --config=<config_file> --dbname=<database_name> [--last-file=<last-file>]
@@ -20,6 +21,8 @@ Options:
         --config=<config_file>          Config file.
         --dbname=<database_name>        Section name in config file.
         --stop-never-slave-server-id    The slave server_id used for binlog server.
+        --info-file                     The file contained the MySQL info which mysqlbinlog needed.
+        --config-file                   The configuration file to be generated.
 """
 from docopt import docopt
 import subprocess
@@ -27,36 +30,43 @@ import logging
 import time
 import ConfigParser
 import os
+import csv
 
-arguments = docopt(__doc__, version='Binlog server 1.0.3')
-print(arguments)
-if arguments['--config']:
+#['ceshi','192.168.3.100', '3307', 'binlog_backup', '123', '', '', '']
+#['ceshi','192.168.3.100', '3307', 'binlog_backup', '123', '/bak/', 'aa.log', '']
+def genConfig(config_file,info_file,delimiter=',',quotechar='"'):
     cf=ConfigParser.ConfigParser()
-    cf.read(arguments['--config'])
-    section_name = arguments['--dbname']
-    db_host = cf.get(section_name, "db_host")
-    db_port = cf.get(section_name, "db_port")
-    db_user = cf.get(section_name, "db_user")
-    db_passwd = cf.get(section_name, "db_passwd")
-    backup_dir = cf.get(section_name, "backup_dir")
-    server_id = cf.get(section_name, "server_id")
-    log = cf.get(section_name, "log")
-    logging.basicConfig(level=logging.DEBUG,
-                format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
-                datefmt='%a, %d %b %Y %H:%M:%S',
-                filename=log,
-                filemode='a')
+    cf.read(config_file)
+    section_list = []
+    with open(info_file,'rb') as csvfile:
+        info = csv.reader(csvfile,delimiter=delimiter,quotechar=quotechar)
+        for row in info:
+            if not row[0]:
+                section_name = row[1].replace('.','',4)
+            db_host, db_port, db_user, db_passwd, server_id = row[1],row[2],row[3],row[7]
+            if row[5][-1] != '/':
+                backup_dir = row[5] + '/'
+            log = backup_dir + row[6]
+            cf.add_section(section_name)
+            cf.set(section_name, db_host, db_port, db_user, db_passwd, backup_dir, log, server_id)
+            section_list.append(section_name)
+    with open(config_file,'a') as f:
+        cf.write(f)
+    return section_list
 
-logging.basicConfig(level=logging.DEBUG,
-                format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
-                datefmt='%a, %d %b %Y %H:%M:%S',
-                filename=arguments['--log'],
-                filemode='a')
+def genStartupComm(section_list):
+    with open(os.getcwd()+'/bootstrap.sh','a') as file:
+        for line in section_list:
+            file.write('python /scripts/binlog_server.py --config=/scripts/binlog_server.cnf --dbname='+ line + '--last-file=mysql-bin.000001' +'\n')
 
 def dumpBinlog(user,password,host,port,backup_dir,log,last_file='',server_id=''):
         LOCAL_BACKUP_DIR=backup_dir
         if backup_dir[-1]!= '/':
+            print('backup_dir must end with /')
             os.exit()
+        if not os.path.isdir(backup_dir):
+            os.makedirs(backup_dir)
+
         #BACKUP_LOG='/data4/binlog_backup/120.27.136.247/BB.log'
         BACKUP_LOG=log[log.rfind('/')+1:]
         while True:
@@ -100,23 +110,48 @@ def dumpBinlog(user,password,host,port,backup_dir,log,last_file='',server_id='')
             time.sleep(10)
 
 if __name__ == '__main__':
+    arguments = docopt(__doc__, version='Binlog server 0.1.3')
+    print(arguments)
     if arguments['--config']:
+        cf=ConfigParser.ConfigParser()
+        cf.read(arguments['--config'])
+        section_name = arguments['--dbname']
+        db_host = cf.get(section_name, "db_host")
+        db_port = cf.get(section_name, "db_port")
+        db_user = cf.get(section_name, "db_user")
+        db_passwd = cf.get(section_name, "db_passwd")
+        backup_dir = cf.get(section_name, "backup_dir")
+        server_id = cf.get(section_name, "server_id")
+        log = cf.get(section_name, "log")
+        logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
+                    datefmt='%a, %d %b %Y %H:%M:%S',
+                    filename=log,
+                    filemode='a')
         lock_file=db_host+"_binlog_server.lock"
     else:
+        logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
+                    datefmt='%a, %d %b %Y %H:%M:%S',
+                    filename=arguments['--log'],
+                    filemode='a')
         lock_file=arguments['--host']+"_binlog_server.lock"
-
+        
     child=subprocess.Popen('ls /tmp|grep %s' % (lock_file),shell=True,stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     child.wait()
     lock=child.communicate()[0].strip()
     print(lock)
-    if not lock:
-        subprocess.call('touch /tmp/%s' % (lock_file),shell=True)
-        logging.info('Get lock,Binlog server start!!!')
-        if not arguments['--config']:
-           dumpBinlog(arguments['--user'],arguments['--password'],arguments['--host'],arguments['--port'],arguments['--backup-dir'],arguments['--log'],arguments['--last-file'],arguments['--stop-never-slave-server-id'])
-        else:
-           dumpBinlog(db_user,db_passwd,db_host,db_port,backup_dir,log,arguments['--last-file'],server_id)
-
+    if arguments['make-config']:
+        section_list = genConfig()
+        genStartupComm(section_list)
     else:
-        logging.info('Binlog server already running!!!')
-        print('Binlog server already running!!!,please check or reomove the lock file')
+        if not lock:
+            subprocess.call('touch /tmp/%s' % (lock_file),shell=True)
+            logging.info('Get lock,Binlog server start!!!')
+            if not arguments['--config']:
+               dumpBinlog(arguments['--user'],arguments['--password'],arguments['--host'],arguments['--port'],arguments['--backup-dir'],arguments['--log'],arguments['--last-file'],arguments['--stop-never-slave-server-id'])
+            else:
+               dumpBinlog(db_user,db_passwd,db_host,db_port,backup_dir,log,arguments['--last-file'],server_id)
+        else:
+            logging.info('Binlog server already running!!!')
+            print('Binlog server already running!!!,please check or reomove the lock file')
