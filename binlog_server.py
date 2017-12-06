@@ -3,7 +3,7 @@
 """
 Usage:
         binlog_server.py --user=<username> --password=<password> --host=<remote_host> --port=<remote_port> --backup-dir=<backup_dir> --log=<log> [--last-file=<last-file>] [--stop-never-slave-server-id]
-        binlog_server.py make-config --info-file=<a.csv> --config-file<binlog_server.cnf>
+        binlog_server.py make-config --info-file=<a.csv> --config-file=<binlog_server.cnf>
         binlog_server.py -h | --help
         binlog_server.py --version
         binlog_server.py --config=<config_file> --dbname=<database_name> [--last-file=<last-file>]
