@@ -62,12 +62,12 @@ crontab_android.sh
 ```
 [root@cn_mu_binlog_backup scripts]# head -10 android.cnf 
 [40001]
-db_host = 10.241.0.114
+db_host = 10.241.0.999
 db_port = 3306
 db_user = loguser
-db_passwd = Uye232dF5xcxHE
-backup_dir = /data/cn_mu_binlog_backup/android/40001/10.241.0.114/
-log = /data/cn_mu_binlog_backup/android/40001/10.241.0.114/40001.log
+db_passwd = xxx
+backup_dir = /data/app1_binlog_backup/android/40001/10.241.0.999/
+log = /data/app1_binlog_backup/android/40001/10.241.0.999/40001.log
 server_id = 40001
 
 [40002]
@@ -83,16 +83,16 @@ nohup python /scripts/binlog_server.py --config=/scripts/android.cnf --dbname=40
 nohup python /scripts/binlog_server.py --config=/scripts/android.cnf --dbname=40009 --last-file=mysql-bin.000001 &
 nohup python /scripts/binlog_server.py --config=/scripts/android.cnf --dbname=40010 --last-file=mysql-bin.000001 &
 [root@cn_mu_binlog_backup scripts]# head -10 crontab_android.sh
-*/5 * * * * sh  /scripts/mon_binlog_server.sh 40001 10.241.0.114 >> /scripts/mon_40001_binserver.log 2>&1
-*/5 * * * * sh  /scripts/mon_binlog_server.sh 40002 10.241.0.115 >> /scripts/mon_40002_binserver.log 2>&1
-*/5 * * * * sh  /scripts/mon_binlog_server.sh 40003 10.241.0.116 >> /scripts/mon_40003_binserver.log 2>&1
-*/5 * * * * sh  /scripts/mon_binlog_server.sh 40004 10.241.0.117 >> /scripts/mon_40004_binserver.log 2>&1
-*/5 * * * * sh  /scripts/mon_binlog_server.sh 40005 10.241.0.118 >> /scripts/mon_40005_binserver.log 2>&1
-*/5 * * * * sh  /scripts/mon_binlog_server.sh 40006 10.241.0.119 >> /scripts/mon_40006_binserver.log 2>&1
-*/5 * * * * sh  /scripts/mon_binlog_server.sh 40007 10.241.0.120 >> /scripts/mon_40007_binserver.log 2>&1
-*/5 * * * * sh  /scripts/mon_binlog_server.sh 40008 10.241.0.121 >> /scripts/mon_40008_binserver.log 2>&1
-*/5 * * * * sh  /scripts/mon_binlog_server.sh 40009 10.241.0.122 >> /scripts/mon_40009_binserver.log 2>&1
-*/5 * * * * sh  /scripts/mon_binlog_server.sh 40010 10.241.0.123 >> /scripts/mon_40010_binserver.log 2>&1
+*/5 * * * * sh  /scripts/mon_binlog_server.sh 40001 10.241.0.xxx >> /scripts/mon_40001_binserver.log 2>&1
+*/5 * * * * sh  /scripts/mon_binlog_server.sh 40002 10.241.0.xxx >> /scripts/mon_40002_binserver.log 2>&1
+*/5 * * * * sh  /scripts/mon_binlog_server.sh 40003 10.241.0.xxx >> /scripts/mon_40003_binserver.log 2>&1
+*/5 * * * * sh  /scripts/mon_binlog_server.sh 40004 10.241.0.xxx >> /scripts/mon_40004_binserver.log 2>&1
+*/5 * * * * sh  /scripts/mon_binlog_server.sh 40005 10.241.0.xxx >> /scripts/mon_40005_binserver.log 2>&1
+*/5 * * * * sh  /scripts/mon_binlog_server.sh 40006 10.241.0.xxx >> /scripts/mon_40006_binserver.log 2>&1
+*/5 * * * * sh  /scripts/mon_binlog_server.sh 40007 10.241.0.xxx >> /scripts/mon_40007_binserver.log 2>&1
+*/5 * * * * sh  /scripts/mon_binlog_server.sh 40008 10.241.0.xxx >> /scripts/mon_40008_binserver.log 2>&1
+*/5 * * * * sh  /scripts/mon_binlog_server.sh 40009 10.241.0.xxx >> /scripts/mon_40009_binserver.log 2>&1
+*/5 * * * * sh  /scripts/mon_binlog_server.sh 40010 10.241.0.xxx >> /scripts/mon_40010_binserver.log 2>&1
 ```
 
 接下来你就可以使用
