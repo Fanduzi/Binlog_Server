@@ -30,9 +30,9 @@ nohup python binlog_server.py --user=binlog_backup --password=xxxx --host=xxxx -
 ```
 [root@cn_mu_binlog_backup scripts]# less android.csv 
 "40001","10.241.3.xxx","3306","loguser","youpassword","/data/app1_binlog_backup/android/40001/","40001.log","40001"
-"40002","10.241.3.xxx","3306","loguser","youpassword","/data/app1_mu_binlog_backup/android/40002/","40002.log","40002"
-"40003","10.241.3.xxx","3306","loguser","youpassword","/data/app1_mu_binlog_backup/android/40003/","40003.log","40003"
-"40004","10.241.3.xxx","3306","loguser","youpassword","/data/app1_mu_binlog_backup/android/40004/","40004.log","40004"
+"40002","10.241.3.xxx","3306","loguser","youpassword","/data/app1_binlog_backup/android/40002/","40002.log","40002"
+"40003","10.241.3.xxx","3306","loguser","youpassword","/data/app1_binlog_backup/android/40003/","40003.log","40003"
+"40004","10.241.3.xxx","3306","loguser","youpassword","/data/app1_binlog_backup/android/40004/","40004.log","40004"
 ```
 第一列对于配置文件中的section,如果为空("")则为ip地址
 
