@@ -1,5 +1,8 @@
 # Binlog_Server
-首先你应该使用 -h 查看帮助信息
+首先
+`pip install docopt==0.6.2 pymysql filelock`
+
+然后你应该使用 -h 查看帮助信息
 
 ## 同步binlog方法
 两种方式
