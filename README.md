@@ -4,11 +4,12 @@
 ## 同步binlog方法
 两种方式
 
-1.通过配置文件启动
+- 1.通过配置文件启动
 ```
 nohup python /scripts/binlog_server.py --config=/tmp/binlog_server.cnf --dbname=GN_PT_SLAVE1 --last-file=mysql-bin.00001 &
 ```
-2.命令行指定
+- 2.命令行指定
+
 注意backup-dir一定要以'/'结尾
 ```
 nohup python binlog_server.py --user=binlog_backup --password=xxxx --host=xxxx --port=3306 --backup-dir=/data4/binlog_backup/ --log=/data4/binlog_backup/BB.log --last-file=mysql-bin.00001 &
