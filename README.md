@@ -16,6 +16,7 @@ nohup python binlog_server.py --user=binlog_backup --password=xxxx --host=xxxx -
 使用--last-file手动指定binlog server起始文件. 如果指定则默认会去找backup-dir下最后一个作为起点
 
 在脚本中 为了防止重复运行,启动binlog server时会创建了/tmp/IP__binlog_server.lock 文件.
+
 如果有需要停止,需要手动kill binlog_server.py 和 mysqlbinlog, 并且删除/tmp/IP__binlog_server.lock 文件,不然下次起不来
 
 ## 生成配置文件和启动脚本方法
@@ -30,9 +31,13 @@ nohup python binlog_server.py --user=binlog_backup --password=xxxx --host=xxxx -
 "40004","10.241.3.xxx","3306","loguser","youpassword","/data/app1_mu_binlog_backup/android/40004/","40004.log","40004"
 ```
 第一列对于配置文件中的section,如果为空("")则为ip地址
+
 2,3,4,5无需解释
+
 第六列为binlog存储路径,如果目录不存在则会自动创建, 主要以'/'结尾(虽然我好像在脚本中加了判断)
+
 第七列为日志名称,默认存储在备份目录下
+
 第八列为 mysqlbinlog的 --stop-never-slave-server-id 参数值, 可以为空(""),为空则不指定该参数
 
 然后使用如下命令生成配置文件
@@ -40,6 +45,7 @@ nohup python binlog_server.py --user=binlog_backup --password=xxxx --host=xxxx -
 python /scripts/binlog_server.py make-config --info-file=app1.csv --config-file=app1.cnf
 ```
 如果 app1.cnf 已经存在,则需要你手动清空他或删除,我没有在代码里做处理
+
 命令执行成功后会在当前目录生成下列文件
 ```
 # ls | grep android
@@ -86,7 +92,9 @@ nohup python /scripts/binlog_server.py --config=/scripts/android.cnf --dbname=40
 ```
 
 接下来你就可以使用
+
 sh bootstrap_android.sh 来启动binlog server
+
 crontab_android.sh 中为可以添加到crontab的定时监控任务可以监控各个binlog server运行状态 (里面会用到mutt,自己装)
 
 ### 配置文件示例
