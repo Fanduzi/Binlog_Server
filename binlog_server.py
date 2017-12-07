@@ -73,16 +73,16 @@ def genConfig(config_file,info_file,delimiter=',',quotechar='"'):
             cf.set(section_name, 'backup_dir', backup_dir)
             cf.set(section_name, 'log', log)
             cf.set(section_name, 'server_id', server_id)
-            section_list.append([section_name,db_host])
+            section_list.append([section_name,db_host,backup_dir])
     with open(config_file,'w') as f:
         cf.write(f)
     return section_list
 
-def genStartupComm(section_list):
-    with open(os.getcwd()+'/bootstrap.sh','w') as file:
+def genStartupComm(section_list,config_file):
+    with open(os.getcwd()+'/bootstrap_'+os.path.basename(config_file).split('.')[0]+'.sh','w') as file:
         for line in section_list:
-            file.write('nohup python /scripts/binlog_server.py --config=/scripts/binlog_server.cnf --dbname='+ line[0] + ' --last-file=mysql-bin.000001 &' + '\n')
-    with open(os.getcwd()+'/crontab.sh','w') as file:
+            file.write('nohup python /scripts/binlog_server.py --config='+ os.path.realpath(config_file) + ' --dbname='+ line[0] + ' --last-file=mysql-bin.000001 &' + '\n')
+    with open(os.getcwd()+'/crontab_'+os.path.basename(config_file).split('.')[0]+'.sh','w') as file:
         for line in section_list:
             file.write('*/5 * * * * sh  /scripts/mon_binlog_server.sh ' + line[0] + ' ' + line[1] + ' >> /scripts/mon_' + line[0] + '_binserver.log 2>&1' + '\n')
 
@@ -153,7 +153,7 @@ if __name__ == '__main__':
             quotechar = arguments['--quotechar']
 
         section_list = genConfig(arguments['--config-file'],arguments['--info-file'],delimiter,quotechar)
-        genStartupComm(section_list)
+        genStartupComm(section_list,arguments['--config-file'])
     else:
         if arguments['--config']:
             cf=ConfigParser.ConfigParser()
