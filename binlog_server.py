@@ -73,7 +73,7 @@ def genConfig(config_file,info_file,delimiter=',',quotechar='"'):
             cf.set(section_name, 'backup_dir', backup_dir)
             cf.set(section_name, 'log', log)
             cf.set(section_name, 'server_id', server_id)
-            section_list.append(section_name)
+            section_list.append([section_name,db_host])
     with open(config_file,'w') as f:
         cf.write(f)
     return section_list
@@ -81,7 +81,10 @@ def genConfig(config_file,info_file,delimiter=',',quotechar='"'):
 def genStartupComm(section_list):
     with open(os.getcwd()+'/bootstrap.sh','w') as file:
         for line in section_list:
-            file.write('nohup python /scripts/binlog_server.py --config=/scripts/binlog_server.cnf --dbname='+ line + ' --last-file=mysql-bin.000001 &' +'\n')
+            file.write('nohup python /scripts/binlog_server.py --config=/scripts/binlog_server.cnf --dbname='+ line[0] + ' --last-file=mysql-bin.000001 &' + '\n')
+    with open(os.getcwd()+'/crontab.sh','w') as file:
+        for line in section_list:
+            file.write('*/5 * * * * sh  /scripts/mon_binlog_server.sh ' + line[0] + ' ' + line[1] + ' >> /scripts/mon_' + line[0] + '_binserver.log 2>&1' + '\n')
 
 def mkdir(backup_dir):
     if backup_dir[-1]!= '/':
@@ -136,7 +139,7 @@ def dumpBinlog(user,password,host,port,backup_dir,log,last_file='',server_id='')
             time.sleep(10)
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version='Binlog server 0.1.3')
+    arguments = docopt(__doc__, version='Binlog server 0.2.0')
     print(arguments)
 
     if arguments['make-config']:
