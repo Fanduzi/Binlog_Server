@@ -3,7 +3,7 @@
 """
 Usage:
         binlog_server.py --user=<username> --password=<password> --host=<remote_host> --port=<remote_port> --backup-dir=<backup_dir> --log=<log> [--last-file=<last-file>] [--stop-never-slave-server-id]
-        binlog_server.py make-config --info-file=<server.csv> [--delimiter=<','>] [--quotechar=<'"'>] --config-file=<binlog_server.cnf>
+        binlog_server.py make-config --info-file=<server.csv> [--delimiter=<','>] [--quotechar=<'"'>] --config-file=<binlog_server.cnf> [--start-from=<mysql-bin.000001>]
         binlog_server.py -h | --help
         binlog_server.py --version
         binlog_server.py --config=<config_file> --dbname=<database_name> [--last-file=<last-file>]
@@ -25,6 +25,7 @@ Options:
         --delimiter=<','>                       The info file's delimiter [default ','].
         --quotechar=<'"'>                       The info file's quotechar [default '"'].
         --config-file=<./binlog_server.cnf>     The configuration file to be generated [default ./binlog_server.cnf].
+        --start-from                            The --last-file in Bootstrap scripts.[default mysql-bin.000001]
 """
 
 import subprocess
@@ -78,10 +79,10 @@ def genConfig(config_file,info_file,delimiter=',',quotechar='"'):
         cf.write(f)
     return section_list
 
-def genStartupComm(section_list,config_file):
+def genStartupComm(section_list,config_file,start_from='mysql-bin.000001'):
     with open(os.getcwd()+'/bootstrap_'+os.path.basename(config_file).split('.')[0]+'.sh','w') as file:
         for line in section_list:
-            file.write('nohup python /scripts/binlog_server.py --config='+ os.path.realpath(config_file) + ' --dbname='+ line[0] + ' --last-file=mysql-bin.000001 &' + '\n')
+            file.write('nohup python /scripts/binlog_server.py --config='+ os.path.realpath(config_file) + ' --dbname='+ line[0] + ' --last-file=' + start_from + ' &' + '\n')
     with open(os.getcwd()+'/crontab_'+os.path.basename(config_file).split('.')[0]+'.sh','w') as file:
         for line in section_list:
             file.write('*/5 * * * * sh  /scripts/mon_binlog_server.sh ' + line[0] + ' ' + line[1] + ' >> /scripts/mon_' + line[0] + '_binserver.log 2>&1' + '\n')
@@ -139,7 +140,7 @@ def dumpBinlog(user,password,host,port,backup_dir,log,last_file='',server_id='')
             time.sleep(10)
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version='Binlog server 0.2.0')
+    arguments = docopt(__doc__, version='Binlog server 0.3.0')
     print(arguments)
 
     if arguments['make-config']:
@@ -153,7 +154,10 @@ if __name__ == '__main__':
             quotechar = arguments['--quotechar']
 
         section_list = genConfig(arguments['--config-file'],arguments['--info-file'],delimiter,quotechar)
-        genStartupComm(section_list,arguments['--config-file'])
+        if not arguments['--start_from']:
+            genStartupComm(section_list,arguments['--config-file'])
+        else:
+            genStartupComm(section_list,arguments['--config-file'],arguments['--start_from'])
     else:
         if arguments['--config']:
             cf=ConfigParser.ConfigParser()
