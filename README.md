@@ -71,7 +71,7 @@ log = /data/app1_binlog_backup/android/40001/10.241.0.999/40001.log
 server_id = 40001
 
 [40002]
-[root@cn_mu_binlog_backup scripts]# head -10 bootstrap_android.sh
+[root@cn_mu_binlog_backup scripts]# head -10 bootstrap_android.sh    --如果没指定--start-from,则默认--last-file=mysql-bin.000001
 nohup python /scripts/binlog_server.py --config=/scripts/android.cnf --dbname=40001 --last-file=mysql-bin.000001 &
 nohup python /scripts/binlog_server.py --config=/scripts/android.cnf --dbname=40002 --last-file=mysql-bin.000001 &
 nohup python /scripts/binlog_server.py --config=/scripts/android.cnf --dbname=40003 --last-file=mysql-bin.000001 &
