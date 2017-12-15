@@ -38,7 +38,7 @@ nohup python binlog_server.py --user=binlog_backup --password=xxxx --host=xxxx -
 
 2,3,4,5无需解释
 
-第六列为binlog存储路径,如果目录不存在则会自动创建, 主要以'/'结尾(虽然我好像在脚本中加了判断)
+第六列为binlog存储路径,如果目录不存在则会自动创建, 注意要以'/'结尾(虽然我好像在脚本中加了判断)
 
 第七列为日志名称,默认存储在备份目录下
 
