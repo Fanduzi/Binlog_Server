@@ -174,7 +174,7 @@ if __name__ == '__main__':
             mkdir(backup_dir)
             logging.basicConfig(level=logging.DEBUG,
                         format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
-                        datefmt='%a, %d %b %Y %H:%M:%S',
+                        datefmt='%Y-%m-%d %H:%M:%S',
                         filename=log,
                         filemode='a')
             lock_file=db_host+"_binlog_server.lock"
@@ -182,7 +182,7 @@ if __name__ == '__main__':
             mkdir(arguments['--backup-dir'])
             logging.basicConfig(level=logging.DEBUG,
                         format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
-                        datefmt='%a, %d %b %Y %H:%M:%S',
+                        datefmt='%Y-%m-%d %H:%M:%S',
                         filename=arguments['--log'],
                         filemode='a')
             lock_file=arguments['--host']+"_binlog_server.lock"
