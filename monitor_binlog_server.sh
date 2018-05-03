@@ -1,7 +1,7 @@
 #!/bin/bash
 num_py=`ps -ef | grep binlog_server.py | grep -v grep | grep $1 | wc -l`
 num_mysqlbinlog=`ps -ef | grep mysqlbinlog | grep -v grep | grep $2 | wc -l`
-TO_MAIL=fanboshi@longtugame.com
+TO_MAIL=xxx@xxx.com
 if [ $num_py -eq 0 ] && [ $num_mysqlbinlog -eq 0 ];then
         #发邮件,$1 binlog server宕了
         #重启 nohup python /scripts/binlog_server.py --config=/tmp/binlog_server.cnf --dbname=$1 &
