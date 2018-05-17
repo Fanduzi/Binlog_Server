@@ -32,7 +32,7 @@ except:
     import configparser
 
 
-arguments = docopt(__doc__, version='Binlog server 1.0.1')
+arguments = docopt(__doc__, version='Binlog server 1.2.0')
 print(arguments)
 if arguments['--config']:
     cf=ConfigParser.ConfigParser()
