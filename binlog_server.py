@@ -29,7 +29,7 @@ import os
 try:
     import ConfigParser
 except:
-    import configparser
+    import configparser as ConfigParser
 
 
 arguments = docopt(__doc__, version='Binlog server 1.2.0')
