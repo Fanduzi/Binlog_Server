@@ -24,8 +24,13 @@ from docopt import docopt
 import subprocess
 import logging
 import time
-import ConfigParser
 import os
+
+try:
+    import ConfigParser
+except:
+    import configparser
+
 
 arguments = docopt(__doc__, version='Binlog server 1.0.1')
 print(arguments)
@@ -72,7 +77,8 @@ def dumpBinlog(user,password,host,port,backup_dir,log,last_file=''):
                             print(cmd)
                             child=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
                             child.wait()
-                            LAST_FILE=child.communicate()[0].strip()
+                            res=child.communicate()[0].strip()
+                            LAST_FILE=res if not isinstance(res,bytes) else str(res,encoding='utf8')
                             print(LAST_FILE)
             else:
                     LAST_FILE=last_file
