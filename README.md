@@ -58,7 +58,7 @@ bootstrap_android.sh
 crontab_android.sh
 ```
 
-内容如下
+内容如下(目前用的nohup &, 其实用supervisor更好一些)
 ```
 [root@cn_mu_binlog_backup scripts]# head -10 android.cnf 
 [40001]
