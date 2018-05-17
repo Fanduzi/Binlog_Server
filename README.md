@@ -17,7 +17,7 @@ nohup python /scripts/binlog_server.py --config=/tmp/binlog_server.cnf --dbname=
 ```
 nohup python binlog_server.py --user=binlog_backup --password=xxxx --host=xxxx --port=3306 --backup-dir=/data4/binlog_backup/ --log=/data4/binlog_backup/BB.log --last-file=mysql-bin.00001 &
 ```
-使用--last-file手动指定binlog server起始文件. 如果指定则默认会去找backup-dir下最后一个作为起点
+使用--last-file手动指定binlog server起始文件. 如果没指定则默认会去找backup-dir下最后一个作为起点
 
 在脚本中 为了防止重复运行,启动binlog server时会创建了/tmp/IP__binlog_server.lock 文件.
 
