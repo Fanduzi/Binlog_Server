@@ -26,7 +26,7 @@ nohup python binlog_server.py --user=binlog_backup --password=xxxx --host=xxxx -
 ## 生成配置文件和启动脚本方法
 
 当你需要部署几十上百个binlog server时,就需要用到make-config命令了.
-首先创建一个包含csv文件包含服务器信息
+首先创建一个包含服务器信息的csv文件
 ```
 [root@cn_mu_binlog_backup scripts]# less android.csv 
 "40001","10.241.3.xxx","3306","loguser","youpassword","/data/app1_binlog_backup/android/40001/","40001.log","40001"
