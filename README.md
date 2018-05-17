@@ -1,3 +1,5 @@
+[![Author](https://img.shields.io/badge/author-Fan()-blue.svg?style=flat)](http://fuxkdb.com/)
+
 # Binlog_Server
 首先
 `pip install docopt==0.6.2 pymysql filelock`
