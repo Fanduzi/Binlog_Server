@@ -36,6 +36,7 @@ except:
     import configparser as ConfigParser
 import os
 import csv
+import sys
 
 from docopt import docopt
 
@@ -46,7 +47,7 @@ def genConfig(config_file,info_file,delimiter=',',quotechar='"'):
     cf=ConfigParser.ConfigParser()
     cf.read(config_file)
     section_list = []
-    with open(info_file,'rb') as csvfile:
+    with open(info_file,'r') as csvfile:
         info = csv.reader(csvfile,delimiter=delimiter,quotechar=quotechar)
         for row in info:
             if not row[0]:
@@ -96,7 +97,7 @@ def mkdir(backup_dir):
     if not os.path.isdir(backup_dir):
         os.makedirs(backup_dir)
 
-def dumpBinlog(user,password,host,port,backup_dir,log,last_file=''):
+def dumpBinlog(user, password, host,port, backup_dir, log, last_file='', server_id=''):
         LOCAL_BACKUP_DIR=backup_dir
         if backup_dir[-1]!= '/':
             os.exit()
@@ -118,7 +119,11 @@ def dumpBinlog(user,password,host,port,backup_dir,log,last_file=''):
                             child=subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                             child.wait()
                             res=child.communicate()[0].strip()
-                            LAST_FILE=res if not isinstance(res,bytes) else str(res,encoding='utf8')
+                            #LAST_FILE=res if not isinstance(res,bytes) else str(res,encoding='utf8')
+                            if sys.version_info[0] == 2:
+                                LAST_FILE=res
+                            elif sys.version_info[0] == 3:
+                                LAST_FILE=str(res,encoding='utf8')
                             print(LAST_FILE)
             else:
                     LAST_FILE=last_file
