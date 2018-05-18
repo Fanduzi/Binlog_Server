@@ -150,7 +150,7 @@ def dumpBinlog(user, password, host,port, backup_dir, log, last_file='', server_
 
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version='Binlog server 2.0.0')
+    arguments = docopt(__doc__, version='Binlog server 2.1.0')
     print(arguments)
 
     if arguments['make-config']:
